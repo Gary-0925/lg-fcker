@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name            洛谷取关提醒器
+// @name            lg-fcker - 洛谷取关提醒器
 // @namespace       http://tampermonkey.net/
 // @version         2.1
 // @description     洛谷取关提醒器，可以快速检测近期有谁取关了你。
@@ -9,8 +9,8 @@
 // @match           https://www.luogu.com.cn/*
 // @icon            https://cdn.luogu.com.cn/upload/usericon/3.png
 // @grant           none
-// @downloadURL https://update.greasyfork.org/scripts/582602/%E6%B4%9B%E8%B0%B7%E5%8F%96%E5%85%B3%E6%8F%90%E9%86%92%E5%99%A8.user.js
-// @updateURL https://update.greasyfork.org/scripts/582602/%E6%B4%9B%E8%B0%B7%E5%8F%96%E5%85%B3%E6%8F%90%E9%86%92%E5%99%A8.meta.js
+// @downloadURL     https://update.greasyfork.org/scripts/582602/%E6%B4%9B%E8%B0%B7%E5%8F%96%E5%85%B3%E6%8F%90%E9%86%92%E5%99%A8.user.js
+// @updateURL       https://update.greasyfork.org/scripts/582602/%E6%B4%9B%E8%B0%B7%E5%8F%96%E5%85%B3%E6%8F%90%E9%86%92%E5%99%A8.meta.js
 // ==/UserScript==
 
 const container_id = "fcker";
