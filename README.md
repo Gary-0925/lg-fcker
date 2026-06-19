@@ -14,7 +14,7 @@ follower-checker ~~简称 fcker~~。
 
 **注意粉丝越多，需要向洛谷发送的请求越多。如果您的粉丝较多，插件会在短时间内向洛谷发送大量请求。所以不推荐粉丝数极多的网红使用。**
 
-首先你需要一个脚本管理器，然后在[洛谷](https://www.luogu.com.cn/article/ugc80dim/edit)或 [Github](https://github.com/Gary-0925/lg-fcker/blob/main/main.js) 复制脚本代码，并粘贴保存新脚本。或者您也可以前往 [GreasyFork](https://greasyfork.org/zh-CN/scripts/582602-%E6%B4%9B%E8%B0%B7%E5%8F%96%E5%85%B3%E6%8F%90%E9%86%92%E5%99%A8) 安装。
+首先你需要一个脚本管理器，然后在[洛谷](https://www.luogu.com.cn/article/ugc80dim)或 [Github](https://github.com/Gary-0925/lg-fcker/blob/main/main.js) 复制脚本代码，并粘贴保存新脚本。或者您也可以前往 [GreasyFork](https://greasyfork.org/zh-CN/scripts/582602-%E6%B4%9B%E8%B0%B7%E5%8F%96%E5%85%B3%E6%8F%90%E9%86%92%E5%99%A8) 安装。
 
 纯人工编写，好用就资瓷一下吧。
 
