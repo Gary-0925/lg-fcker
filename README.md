@@ -1,22 +1,10 @@
 upd on 2026.6.18：已更新到 2.0 版，优化错误处理、奖项认证显示、tag 显示及样式。
 
+upd on 2026.6.20：已更新到 3.0 版，修复 xcpc 奖项认证颜色问题，支持一键回敬与回关。
+
 这是一个小插件，洛谷取关提醒器，可以~~快速~~（？慢速）检测近期有谁取关了你。感谢 @[ygg_pls](https://www.luogu.com.cn/user/1691170) 提供的 Idea！
 
 follower-checker ~~简称 fcker~~。
-
-```js
-// @name            lg-fcker - 洛谷取关提醒器
-// @version         2.1
-// @license         GNU GPLv3
-```
-
-### 安装方法
-
-**注意粉丝越多，需要向洛谷发送的请求越多。如果您的粉丝较多，插件会在短时间内向洛谷发送大量请求。所以不推荐粉丝数极多的网红使用。**
-
-首先你需要一个脚本管理器，然后在[洛谷](https://www.luogu.com.cn/article/ugc80dim)或 [Github](https://github.com/Gary-0925/lg-fcker/blob/main/main.js) 复制脚本代码，并粘贴保存新脚本。或者您也可以前往 [GreasyFork](https://greasyfork.org/zh-CN/scripts/582602-%E6%B4%9B%E8%B0%B7%E5%8F%96%E5%85%B3%E6%8F%90%E9%86%92%E5%99%A8) 安装。
-
-纯人工编写，好用就资瓷一下吧。
 
 ### 使用方法
 
