@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            lg-fcker - 洛谷取关提醒器
 // @namespace       http://tampermonkey.net/
-// @version         3.1
+// @version         3.2
 // @description     洛谷取关提醒器，可以快速检测近期粉丝变化，并支持回敬与回关。
 // @author          Gary0
 // @license         GNU GPLv3
@@ -11,7 +11,7 @@
 // @grant           none
 // ==/UserScript==
 
-const container_id = "fcker";
+const version = "3.2";
 function esc_html(s)
 {
 	let str = String(s);
@@ -25,7 +25,7 @@ function insert_el(base, label, content, id, class_list)
 	el.innerHTML = content, el.id = id, el.classList = class_list;
 	return base.appendChild(el);
 }
-function insert_css(content) { insert_el(get_el(container_id), "style", content, "", ""); }
+function insert_css(content) { insert_el(get_el("fcker"), "style", content, "", ""); }
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 async function update_relation(uid, action)
@@ -54,8 +54,8 @@ function get_uid()
 let UID = get_uid();
 if (UID)
 {
-	const container = insert_el(document.body, "div", "", container_id, "");
-	container.style = "position: fixed; top: 0; left: 0; bottom: 0; right: 0; z-index: 1000; pointer-events: none;";
+	const fcker = insert_el(document.body, "div", "", "fcker", "");
+	fcker.style = "position: fixed; top: 0; left: 0; bottom: 0; right: 0; z-index: 1000; pointer-events: none;";
 	insert_css(`
 		.fcker-card {
 			background-color: #fff;
@@ -159,13 +159,13 @@ if (UID)
 		#fcker-main {
 			position: fixed;
 			top: 60px;
-			right: -280px;
+			right: -290px;
 			width: 300px;
 			pointer-events: auto;
 			transition: transform 0.2s ease;
 		}
 		#fcker-main:hover {
-			transform: translateX(-260px);
+			transform: translateX(-270px);
 		}
 
 		.fcker-modal-mask {
@@ -217,9 +217,9 @@ if (UID)
 		}
 	`);
 
-	const main = insert_el(container, "div", "<h3>取关提醒器</h3>", "fcker-main", "fcker-card");
-	const get_btn = insert_el(main, "button", "获取新列表", "", "fcker-btn");
-	const info_btn = insert_el(main, "button", "关于插件", "", "fcker-btn");
+	const main = insert_el(fcker, "div", "<h3>取关提醒器</h3>", "fcker-main", "fcker-card");
+	const get_btn = insert_el(main, "button", "获取粉丝列表", "", "fcker-btn");
+	const info_btn = insert_el(main, "button", "关于与更新", "", "fcker-btn");
 
 	function show_info()
 	{
@@ -227,7 +227,7 @@ if (UID)
 		document.body.style.overflow = "hidden";
 
 		let ctrler = new AbortController(), cls = false;
-		const mask = insert_el(container, "div", "", "", "fcker-modal-mask");
+		const mask = insert_el(fcker, "div", "", "", "fcker-modal-mask");
 		const dialog = insert_el(mask, "div", "", "", "fcker-modal-dialog");
 		const header = insert_el(dialog, "div", "关于", "", "fcker-modal-header");
 		const quit_btn = insert_el(header, "button", "×", "", "fcker-modal-close");
@@ -244,23 +244,41 @@ if (UID)
 		quit_btn.addEventListener("click", destroy_modal);
 
 		const html = `
-			<h3>lg-fcker v3.1</h3>
-			<p>
+			<h3>lg-fcker ${version}</h3>
+			<p id="Gary0">
 				By @<a href="https://www.luogu.com.cn/user/1202669">Gary0</a>
 			</p>
-			<p>
+			<p id="ygg_pls">
 				感谢 @<a href="https://www.luogu.com.cn/user/1691170">ygg_pls</a> 提供的 Idea 和一些建议
 			</p>
 			<p>
 				<h4>更新获取</h4>
 				<a href="https://greasyfork.org/zh-CN/scripts/582602-lg-fcker-%E6%B4%9B%E8%B0%B7%E5%8F%96%E5%85%B3%E6%8F%90%E9%86%92%E5%99%A8">GreasyFork（推荐）</a>
 				<br>
+				<br>
 				<a href="https://github.com/Gary-0925/lg-fcker/blob/main/main.js">Github</a>
+				<br>
 				<br>
 				<a href="https://www.luogu.com.cn/article/ugc80dim">洛谷（更新慢）</a>
 			</p>
 		`;
-		const get_card = insert_el(dialog, "div", html, "", "fcker-modal-body");
+		insert_el(dialog, "div", html, "", "fcker-modal-body");
+
+		const Gary0_btn = insert_el(get_el("Gary0"), "button", "关注 ta", "", "fcker-action-btn");
+		Gary0_btn.style.backgroundColor = "#52c41a";
+		Gary0_btn.addEventListener("click", async () => {
+			Gary0_btn.disabled = true, Gary0_btn.innerText = "...", Gary0_btn.style.backgroundColor = "#bfbfbf";
+			if (await update_relation(1202669, 1)) Gary0_btn.innerText = "已关注";
+			else Gary0_btn.disabled = false, Gary0_btn.innerText = "失败或已关注";
+		});
+
+		const ygg_pls_btn = insert_el(get_el("ygg_pls"), "button", "关注 ta", "", "fcker-action-btn");
+		ygg_pls_btn.style.backgroundColor = "#52c41a";
+		ygg_pls_btn.addEventListener("click", async () => {
+			ygg_pls_btn.disabled = true, ygg_pls_btn.innerText = "...", ygg_pls_btn.style.backgroundColor = "#bfbfbf";
+			if (await update_relation(1691170, 1)) ygg_pls_btn.innerText = "已关注";
+			else ygg_pls_btn.disabled = false, ygg_pls_btn.innerText = "失败或已关注";
+		});
 	}
 	info_btn.addEventListener("click", show_info);
 
@@ -270,7 +288,7 @@ if (UID)
 
 		let ctrler = new AbortController(), cls = false;
 
-		const mask = insert_el(container, "div", "", "", "fcker-modal-mask");
+		const mask = insert_el(fcker, "div", "", "", "fcker-modal-mask");
 		const dialog = insert_el(mask, "div", "", "", "fcker-modal-dialog");
 		const header = insert_el(dialog, "div", "粉丝列表", "", "fcker-modal-header");
 		const quit_btn = insert_el(header, "button", "×", "", "fcker-modal-close");
@@ -331,6 +349,11 @@ if (UID)
 			if (cdata.success)
 			{
 				const count = cdata.data, pages = Math.ceil(count / 20);
+				if (count > 800)
+				{
+					get_card_status.innerText = `您的粉丝页数太多，为保障安全，禁止使用`;
+					return null;
+				}
 				let nc = 0, success = true, list = [], tasks = [];
 				get_card_status.innerText = `loading... 0 / ${count}`;
 				for (let i = 1; i <= pages; i++)
@@ -358,7 +381,7 @@ if (UID)
 					if (nc === count) return list;
 					else
 					{
-						get_card_status.innerText = "获取粉丝列表失败：列表不完整";
+						get_card_status.innerText = "获取粉丝列表失败";
 						return null;
 					}
 				}
@@ -371,7 +394,23 @@ if (UID)
 			}
 		}
 
-		let list = await get_all_followers(UID);
+		let list = null;
+		const now = new Date();
+		const last_time = localStorage.getItem("fcker_last"), today_list = localStorage.getItem("fcker_today");
+		if (last_time && today_list && (now.getDate().toString() == last_time))
+		{
+			list = JSON.parse(today_list);
+		}
+		else
+		{
+			list = await get_all_followers(UID);
+			if (list)
+			{
+				localStorage.setItem("fcker_last", now.getDate().toString());
+				localStorage.setItem("fcker_today", JSON.stringify(list));
+			}
+		}
+
 		if (cls) return;
 		let old_list = null;
 		if (localStorage.getItem("fcker")) old_list = JSON.parse(localStorage.getItem("fcker"));
