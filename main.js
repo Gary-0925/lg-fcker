@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            lg-fcker - 洛谷取关提醒器
 // @namespace       http://tampermonkey.net/
-// @version         3.3
+// @version         4.0
 // @description     洛谷取关提醒器，可以快速检测近期粉丝变化，并支持回敬与回关。
 // @author          Gary0
 // @license         GNU GPLv3
@@ -11,7 +11,8 @@
 // @grant           none
 // ==/UserScript==
 
-const version = "3.3", devs = [1202669, 1691170];
+const version = "4.0", devs = [1202669, 1691170];
+
 function esc_html(s)
 {
 	let str = String(s);
@@ -27,6 +28,19 @@ function insert_el(base, label, content, id, class_list)
 }
 function insert_css(content) { insert_el(get_el("fcker"), "style", content, "", ""); }
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+function string_to_map(data_json)
+{
+	const data_ob = JSON.parse(data_json);
+	const data_arr = Object.entries(data_ob);
+	const data_map = new Map(data_arr);
+	return data_map;
+}
+function map_to_string(data_map)
+{
+	const data_ob = Object.fromEntries(data_map);
+	const data_json = JSON.stringify(data_ob);
+	return data_json;
+}
 
 async function update_relation(uid, action)
 {
@@ -219,7 +233,7 @@ if (UID)
 
 	const main = insert_el(fcker, "div", "<h3>取关提醒器</h3>", "fcker-main", "fcker-card");
 	const get_btn = insert_el(main, "button", "获取粉丝列表", "", "fcker-btn");
-	const info_btn = insert_el(main, "button", "关于与更新", "", "fcker-btn");
+	const info_btn = insert_el(main, "button", "其他", "", "fcker-btn");
 
 	function show_info()
 	{
@@ -256,6 +270,13 @@ if (UID)
 				<br>
 				<br>
 				<a href="https://www.luogu.com.cn/article/ugc80dim">洛谷（更新慢）</a>
+			</p>
+			<p>
+				<h4>自定义 badge</h4>
+				<a href="https://www.luogu.com.cn/chat?uid=1202669">私信 Gary0</a>
+				<br>
+				<br>
+				<a href="https://www.luogu.com.cn/problem/U694090">云端储存库</a>
 			</p>
 		`;
 		insert_el(dialog, "div", html, "", "fcker-modal-body");
@@ -310,6 +331,14 @@ if (UID)
 			const json = JSON.parse(m[1]);
 			if (!json?.data?.users?.count) return { success: false, data: "页面解析失败" };
 			return { success: true, data: json.data.users.count };
+		}
+		async function parse_badges(html)
+		{
+			const m = html.match(/<script id="lentille-context" type="application\/json">([\s\S]*?)<\/script>/);
+			if (!m) return null;
+			const json = JSON.parse(m[1]);
+			if (!json?.data?.problem?.samples) return { success: false, data: "页面解析失败" };
+			return { success: true, data: json.data.problem.samples[0][0] };
 		}
 		async function get_followers(uid, page)
 		{
@@ -378,13 +407,24 @@ if (UID)
 				return null;
 			}
 		}
+		async function get_badges()
+		{
+			return await fetch(`https://www.luogu.com.cn/problem/U694090`)
+				.then(async (data) => {
+					const text = await data.text();
+					const str = await parse_badges(text);
+					return string_to_map(str.data);
+				})
+				.catch((err) => { return new Map(); });
+		}
 
-		let list = null;
+		let list = null, old_list = null, badges = new Map();
 		const now = new Date();
 		const last_time = localStorage.getItem("fcker-last"), today_list = localStorage.getItem("fcker-today");
 		if (last_time && today_list && (now.toDateString() == last_time))
 		{
 			list = JSON.parse(today_list);
+			if (localStorage.getItem("fcker-badge")) badges = string_to_map(localStorage.getItem("fcker-badge"));
 		}
 		else
 		{
@@ -394,12 +434,12 @@ if (UID)
 				localStorage.setItem("fcker-last", now.toDateString());
 				localStorage.setItem("fcker-today", JSON.stringify(list));
 			}
+			badges = await get_badges();
+			if (badges) localStorage.setItem("fcker-badge", map_to_string(badges));
+			else badges = new Map();
 		}
-
-		quit_btn.style.visibility = "";
-
-		let old_list = null;
 		if (localStorage.getItem("fcker")) old_list = JSON.parse(localStorage.getItem("fcker"));
+		quit_btn.style.visibility = "";
 
 		function get_color(color)
 		{
@@ -408,13 +448,11 @@ if (UID)
 			if (color === "cheater") return "var(--lfe-color--yellow-4)";
 			return `var(--lfe-color--${color}-3)`;
 		}
-
 		function display_followers(list, action_type = "")
 		{
 			for (const user of list)
 			{
-				if (devs.includes(user.uid)) user.badge = user.badge ? user.badge + " || lg-fcker" : "lg-fcker";
-
+				if (badges.get(user.uid.toString())) user.badge = user.badge ? user.badge + " || " + badges.get(user.uid.toString()) : badges.get(user.uid.toString());
 				let ccf_hook_color = "var(--lfe-color--green-3)";
 				if (user.ccfLevel >= 6) ccf_hook_color = "var(--lfe-color--blue-3)";
 				if (user.ccfLevel >= 8) ccf_hook_color = "var(--lfe-color--gold-3)";
@@ -505,7 +543,7 @@ if (UID)
 			if (new_followers.length === 0) insert_el(get_card, "p", "无", "", "");
 			display_followers(new_followers, "new");
 		}
-		function display_all_followers(list)
+		function show_followers(list)
 		{
 			get_card.innerHTML = "";
 			const comp_btn = insert_el(get_card, "button", "对比差异", "", "fcker-btn");
@@ -514,6 +552,6 @@ if (UID)
 			save_btn.addEventListener("click", save_followers);
 			display_followers(list);
 		}
-		if (list) display_all_followers(list);
+		if (list) show_followers(list);
 	});
 }
