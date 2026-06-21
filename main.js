@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            lg-fcker - 洛谷取关提醒器
 // @namespace       http://tampermonkey.net/
-// @version         3.2
+// @version         3.3
 // @description     洛谷取关提醒器，可以快速检测近期粉丝变化，并支持回敬与回关。
 // @author          Gary0
 // @license         GNU GPLv3
@@ -11,7 +11,7 @@
 // @grant           none
 // ==/UserScript==
 
-const version = "3.2";
+const version = "3.3", devs = [1202669, 1691170];
 function esc_html(s)
 {
 	let str = String(s);
@@ -44,9 +44,9 @@ async function update_relation(uid, action)
 }
 function get_uid()
 {
-	const m = document.documentElement.outerHTML.match(/<script id="lentille-context" type="application\/json">([\s\S]*?)<\/script>/);
+	const m = document.getElementById("lentille-context");
 	if (!m) return null;
-	const json = JSON.parse(m[1]);
+	const json = JSON.parse(m.innerHTML);
 	if (!json?.user?.uid) return null;
 	return json.user.uid;
 }
@@ -226,7 +226,6 @@ if (UID)
 		main.style.display = "none";
 		document.body.style.overflow = "hidden";
 
-		let ctrler = new AbortController(), cls = false;
 		const mask = insert_el(fcker, "div", "", "", "fcker-modal-mask");
 		const dialog = insert_el(mask, "div", "", "", "fcker-modal-dialog");
 		const header = insert_el(dialog, "div", "关于", "", "fcker-modal-header");
@@ -234,9 +233,6 @@ if (UID)
 
 		function destroy_modal()
 		{
-			if (cls) return;
-			cls = true;
-			ctrler.abort();
 			mask.remove();
 			document.body.style.overflow = "";
 			main.style.display = "";
@@ -245,10 +241,10 @@ if (UID)
 
 		const html = `
 			<h3>lg-fcker ${version}</h3>
-			<p id="Gary0">
+			<p id="dev-1202669">
 				By @<a href="https://www.luogu.com.cn/user/1202669">Gary0</a>
 			</p>
-			<p id="ygg_pls">
+			<p id="dev-1691170">
 				感谢 @<a href="https://www.luogu.com.cn/user/1691170">ygg_pls</a> 提供的 Idea 和一些建议
 			</p>
 			<p>
@@ -264,21 +260,16 @@ if (UID)
 		`;
 		insert_el(dialog, "div", html, "", "fcker-modal-body");
 
-		const Gary0_btn = insert_el(get_el("Gary0"), "button", "关注 ta", "", "fcker-action-btn");
-		Gary0_btn.style.backgroundColor = "#52c41a";
-		Gary0_btn.addEventListener("click", async () => {
-			Gary0_btn.disabled = true, Gary0_btn.innerText = "...", Gary0_btn.style.backgroundColor = "#bfbfbf";
-			if (await update_relation(1202669, 1)) Gary0_btn.innerText = "已关注";
-			else Gary0_btn.disabled = false, Gary0_btn.innerText = "失败或已关注";
-		});
-
-		const ygg_pls_btn = insert_el(get_el("ygg_pls"), "button", "关注 ta", "", "fcker-action-btn");
-		ygg_pls_btn.style.backgroundColor = "#52c41a";
-		ygg_pls_btn.addEventListener("click", async () => {
-			ygg_pls_btn.disabled = true, ygg_pls_btn.innerText = "...", ygg_pls_btn.style.backgroundColor = "#bfbfbf";
-			if (await update_relation(1691170, 1)) ygg_pls_btn.innerText = "已关注";
-			else ygg_pls_btn.disabled = false, ygg_pls_btn.innerText = "失败或已关注";
-		});
+		for (const dev of devs)
+		{
+			const btn = insert_el(get_el(`dev-${dev}`), "button", "关注 ta", "", "fcker-action-btn");
+			btn.style.backgroundColor = "#52c41a";
+			btn.addEventListener("click", async () => {
+				btn.disabled = true, btn.innerText = "...", btn.style.backgroundColor = "#bfbfbf";
+				if (await update_relation(dev, 1)) btn.innerText = "已关注";
+				else btn.disabled = false, btn.innerText = "失败或已关注";
+			});
+		}
 	}
 	info_btn.addEventListener("click", show_info);
 
@@ -286,18 +277,14 @@ if (UID)
 		main.style.display = "none";
 		document.body.style.overflow = "hidden";
 
-		let ctrler = new AbortController(), cls = false;
-
 		const mask = insert_el(fcker, "div", "", "", "fcker-modal-mask");
 		const dialog = insert_el(mask, "div", "", "", "fcker-modal-dialog");
 		const header = insert_el(dialog, "div", "粉丝列表", "", "fcker-modal-header");
 		const quit_btn = insert_el(header, "button", "×", "", "fcker-modal-close");
+		quit_btn.style.visibility = "hidden";
 
 		function destroy_modal()
 		{
-			if (cls) return;
-			cls = true;
-			ctrler.abort();
 			mask.remove();
 			document.body.style.overflow = "";
 			main.style.display = "";
@@ -326,7 +313,7 @@ if (UID)
 		}
 		async function get_followers(uid, page)
 		{
-			return await fetch(`https://www.luogu.com.cn/user/${uid}/follower?page=${page}`, { signal: ctrler.signal })
+			return await fetch(`https://www.luogu.com.cn/user/${uid}/follower?page=${page}`)
 				.then(async (data) => {
 					const text = await data.text();
 					return await parse_followers(text);
@@ -335,7 +322,7 @@ if (UID)
 		}
 		async function get_followers_count(uid)
 		{
-			return await fetch(`https://www.luogu.com.cn/user/${uid}/follower`, { signal: ctrler.signal })
+			return await fetch(`https://www.luogu.com.cn/user/${uid}/follower`)
 				.then(async (data) => {
 					const text = await data.text();
 					return await parse_followers_count(text);
@@ -358,7 +345,6 @@ if (UID)
 				get_card_status.innerText = `loading... 0 / ${count}`;
 				for (let i = 1; i <= pages; i++)
 				{
-					if (cls) return null;
 					await sleep(1000);
 					let p = get_followers(uid, i).then((res) => {
 						if (res.success && success)
@@ -369,12 +355,11 @@ if (UID)
 						else if (!res.success)
 						{
 							success = false;
-							if (!cls) get_card_status.innerText = res.data;
+							get_card_status.innerText = res.data;
 						}
 					});
 					tasks.push(p);
 				}
-				if (cls) return null;
 				await Promise.all(tasks);
 				if (success)
 				{
@@ -389,15 +374,15 @@ if (UID)
 			}
 			else
 			{
-				if (!cls) get_card_status.innerText = cdata.data;
+				get_card_status.innerText = cdata.data;
 				return null;
 			}
 		}
 
 		let list = null;
 		const now = new Date();
-		const last_time = localStorage.getItem("fcker_last"), today_list = localStorage.getItem("fcker_today");
-		if (last_time && today_list && (now.getDate().toString() == last_time))
+		const last_time = localStorage.getItem("fcker-last"), today_list = localStorage.getItem("fcker-today");
+		if (last_time && today_list && (now.toDateString() == last_time))
 		{
 			list = JSON.parse(today_list);
 		}
@@ -406,12 +391,13 @@ if (UID)
 			list = await get_all_followers(UID);
 			if (list)
 			{
-				localStorage.setItem("fcker_last", now.getDate().toString());
-				localStorage.setItem("fcker_today", JSON.stringify(list));
+				localStorage.setItem("fcker-last", now.toDateString());
+				localStorage.setItem("fcker-today", JSON.stringify(list));
 			}
 		}
 
-		if (cls) return;
+		quit_btn.style.visibility = "";
+
 		let old_list = null;
 		if (localStorage.getItem("fcker")) old_list = JSON.parse(localStorage.getItem("fcker"));
 
@@ -427,6 +413,8 @@ if (UID)
 		{
 			for (const user of list)
 			{
+				if (devs.includes(user.uid)) user.badge = user.badge ? user.badge + " || lg-fcker" : "lg-fcker";
+
 				let ccf_hook_color = "var(--lfe-color--green-3)";
 				if (user.ccfLevel >= 6) ccf_hook_color = "var(--lfe-color--blue-3)";
 				if (user.ccfLevel >= 8) ccf_hook_color = "var(--lfe-color--gold-3)";
