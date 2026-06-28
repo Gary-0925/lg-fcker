@@ -10,7 +10,7 @@ follower-checker ~~简称 fcker~~。
 
 ```js
 // @name            lg-fcker - 洛谷取关提醒器
-// @version         4.0
+// @version         4.3
 // @license         GNU GPLv3
 ```
 
